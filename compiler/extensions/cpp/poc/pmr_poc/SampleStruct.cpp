@@ -14,10 +14,11 @@
 namespace pmr_poc
 {
 
-SampleStruct::SampleStruct(::zserio::BitStreamReader& in, ::zserio::pmr::MemoryResource& resource) :
+SampleStruct::SampleStruct(::zserio::BitStreamReader& in,
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
         m_uint8Field_(readUint8Field(in)),
-        m_stringField_(readStringField(in, resource)),
-        m_childField_(readChildField(in, resource))
+        m_stringField_(readStringField(in, allocator)),
+        m_childField_(readChildField(in, allocator))
 {
 }
 
@@ -77,15 +78,15 @@ uint8_t SampleStruct::readUint8Field(::zserio::BitStreamReader& in)
 }
 
 ::zserio::pmr::string SampleStruct::readStringField(::zserio::BitStreamReader& in,
-        ::zserio::pmr::MemoryResource& resource)
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
-    return in.readString<::zserio::pmr::PolymorphicAllocator>(resource);
+    return in.readString(allocator);
 }
 
 ::pmr_poc::ChildStruct SampleStruct::readChildField(::zserio::BitStreamReader& in,
-        ::zserio::pmr::MemoryResource& resource)
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
-    return ::pmr_poc::ChildStruct(in, resource);
+    return ::pmr_poc::ChildStruct(in, allocator);
 }
 
 } // namespace pmr_poc

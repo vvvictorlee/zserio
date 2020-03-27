@@ -19,7 +19,8 @@ class ChildStruct
 {
 public:
     explicit ChildStruct(::zserio::BitStreamReader& in,
-            ::zserio::pmr::MemoryResource& resource = ::zserio::pmr::getDefaultResource());
+            const ::zserio::pmr::PolymorphicAllocator<void>& allocator =
+                    ::zserio::pmr::PolymorphicAllocator<void>());
 
     ~ChildStruct() = default;
 
@@ -42,8 +43,9 @@ public:
 
 private:
     uint64_t readUint64Field(::zserio::BitStreamReader& in);
+
     ::zserio::pmr::vector<uint16_t> readUint16Array(::zserio::BitStreamReader& in,
-            ::zserio::pmr::MemoryResource& resource);
+            const ::zserio::pmr::PolymorphicAllocator<void>& alloc);
 
     uint64_t m_uint64Field_;
     ::zserio::pmr::vector<uint16_t> m_uint16Array_;

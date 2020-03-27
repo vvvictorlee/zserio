@@ -14,6 +14,10 @@ class PolymorphicAllocator
 public:
     using value_type = T;
 
+    PolymorphicAllocator() noexcept
+    :   m_resource(getDefaultResource())
+    {}
+
     PolymorphicAllocator(MemoryResource& resource) noexcept
     :   m_resource(resource)
     {}

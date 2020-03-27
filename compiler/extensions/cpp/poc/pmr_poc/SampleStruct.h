@@ -20,7 +20,8 @@ class SampleStruct
 {
 public:
     explicit SampleStruct(::zserio::BitStreamReader& in,
-            ::zserio::pmr::MemoryResource& resource = ::zserio::pmr::getDefaultResource());
+            const ::zserio::pmr::PolymorphicAllocator<void>& allocator =
+                        ::zserio::pmr::PolymorphicAllocator<void>());
 
     ~SampleStruct() = default;
 
@@ -44,9 +45,9 @@ public:
 private:
     uint8_t readUint8Field(::zserio::BitStreamReader& in);
     ::zserio::pmr::string readStringField(::zserio::BitStreamReader& in,
-            ::zserio::pmr::MemoryResource& resource);
+            const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
     ::pmr_poc::ChildStruct readChildField(::zserio::BitStreamReader& in,
-            ::zserio::pmr::MemoryResource& resource);
+            const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
 
     uint8_t m_uint8Field_;
     ::zserio::pmr::string m_stringField_;

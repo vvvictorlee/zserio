@@ -92,14 +92,22 @@ int main(int argc, char* argv[])
         TestResource resource;
         zserio::pmr::PolymorphicAllocator<pmr_poc::SampleStruct> allocator(resource);
 
-#if 1
+#if 0
         std::shared_ptr<pmr_poc::SampleStruct> sampleStruct =
                 std::allocate_shared<pmr_poc::SampleStruct>(allocator, reader, resource);
-#else
+#endif
+#if 1
         pmr_poc::SampleStruct* sampleStruct =
                 new (allocator.allocate(1)) pmr_poc::SampleStruct(reader, resource);
         sampleStruct->~SampleStruct();
         allocator.deallocate(sampleStruct, 1);
+#endif
+#if 0
+        pmr_poc::SampleStruct* sampleStruct =
+                new (resource.allocate(sizeof(pmr_poc::SampleStruct), alignof(pmr_poc::SampleStruct)))
+                        pmr_poc::SampleStruct(reader, resource);
+        sampleStruct->~SampleStruct();
+        resource.deallocate(sampleStruct, sizeof(pmr_poc::SampleStruct), alignof(pmr_poc::SampleStruct));
 #endif
     }
 

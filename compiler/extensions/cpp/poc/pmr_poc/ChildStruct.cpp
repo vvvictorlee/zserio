@@ -14,9 +14,10 @@
 namespace pmr_poc
 {
 
-ChildStruct::ChildStruct(::zserio::BitStreamReader& in, ::zserio::pmr::MemoryResource& resource) :
+ChildStruct::ChildStruct(::zserio::BitStreamReader& in,
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
         m_uint64Field_(readUint64Field(in)),
-        m_uint16Array_(readUint16Array(in, resource))
+        m_uint16Array_(readUint16Array(in, allocator))
 {
 }
 
@@ -35,7 +36,8 @@ size_t ChildStruct::bitSizeOf(size_t bitPosition) const
     size_t endBitPosition = bitPosition;
 
     endBitPosition += UINT8_C(64);
-    endBitPosition += ::zserio::bitSizeOfAuto(::zserio::StdIntArrayTraits<uint16_t>(), m_uint16Array_, endBitPosition);
+    endBitPosition += ::zserio::bitSizeOfAuto(
+            ::zserio::StdIntArrayTraits<uint16_t>(), m_uint16Array_, endBitPosition);
 
     return endBitPosition - bitPosition;
 }
@@ -68,9 +70,9 @@ uint64_t ChildStruct::readUint64Field(::zserio::BitStreamReader& in)
 }
 
 ::zserio::pmr::vector<uint16_t> ChildStruct::readUint16Array(::zserio::BitStreamReader& in,
-        ::zserio::pmr::MemoryResource& resource)
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
-    ::zserio::pmr::vector<uint16_t> readField{resource};
+    ::zserio::pmr::vector<uint16_t> readField{allocator};
     ::zserio::readAuto(::zserio::StdIntArrayTraits<uint16_t>(), readField, in);
     return readField;
 }

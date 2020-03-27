@@ -7,6 +7,7 @@
 #include "zserio/Types.h"
 #include "zserio/BitBuffer.h"
 #include "zserio/VarUInt64Util.h"
+#include "zserio/RebindAlloc.h"
 
 namespace zserio
 {
@@ -214,10 +215,11 @@ public:
      *
      * \return Read string.
      */
-    template <template <typename> typename ALLOC>
-    std::basic_string<char, std::char_traits<char>, ALLOC<char>> readString(const ALLOC<char>& alloc)
+    template <typename ALLOC>
+    std::basic_string<char, std::char_traits<char>, zserio::RebindAlloc<ALLOC, char>> readString(
+            const ALLOC& alloc)
     {
-        std::basic_string<char, std::char_traits<char>, ALLOC<char>> value{alloc};
+        std::basic_string<char, std::char_traits<char>, zserio::RebindAlloc<ALLOC, char>> value{alloc};
         const size_t len = convertVarUInt64ToArraySize(readVarUInt64());
         value.reserve(len);
         for (size_t i = 0; i < len; ++i)
