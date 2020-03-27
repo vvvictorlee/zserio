@@ -2,8 +2,8 @@
 #define ZSERIO_BIT_STREAM_READER_H_INC
 
 #include <cstddef>
+#include <string>
 
-#include "zserio/pmr/String.h"
 #include "zserio/Types.h"
 #include "zserio/BitBuffer.h"
 #include "zserio/VarUInt64Util.h"

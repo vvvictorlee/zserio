@@ -8,7 +8,7 @@
 #include <zserio/BitStreamReader.h>
 #include <zserio/BitStreamWriter.h>
 #include <zserio/PreWriteAction.h>
-#include <vector>
+#include <zserio/pmr/Vector.h>
 #include <zserio/Arrays.h>
 #include <zserio/Types.h>
 
