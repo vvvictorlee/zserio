@@ -1,6 +1,7 @@
 #include <limits>
 #include <algorithm>
 #include <iomanip>
+#include <memory>
 #include "zserio/pmr/Vector.h"
 
 #include "pmr_poc/SampleStruct.h"
@@ -91,10 +92,15 @@ int main(int argc, char* argv[])
         TestResource resource;
         zserio::pmr::PolymorphicAllocator<pmr_poc::SampleStruct> allocator(resource);
 
+#if 1
+        std::shared_ptr<pmr_poc::SampleStruct> sampleStruct =
+                std::allocate_shared<pmr_poc::SampleStruct>(allocator, reader, resource);
+#else
         pmr_poc::SampleStruct* sampleStruct =
                 new (allocator.allocate(1)) pmr_poc::SampleStruct(reader, resource);
         sampleStruct->~SampleStruct();
         allocator.deallocate(sampleStruct, 1);
+#endif
     }
 
     return 0;
