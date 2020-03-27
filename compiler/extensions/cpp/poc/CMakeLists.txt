@@ -5,10 +5,10 @@ project(PmrTest)
 set(CMAKE_CXX_STANDARD 11)
 
 set(PMR_POC_GEN
-    pmr_poc/ChildStruct.cpp
     pmr_poc/ChildStruct.h
-    pmr_poc/SampleStruct.cpp
+    pmr_poc/ChildStruct.hpp
     pmr_poc/SampleStruct.h
+    pmr_poc/SampleStruct.hpp
 )
 
 add_executable(${PROJECT_NAME}

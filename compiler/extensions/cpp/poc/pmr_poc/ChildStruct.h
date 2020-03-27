@@ -15,12 +15,12 @@
 namespace pmr_poc
 {
 
+template <typename ALLOC>
 class ChildStruct
 {
 public:
     explicit ChildStruct(::zserio::BitStreamReader& in,
-            const ::zserio::pmr::PolymorphicAllocator<void>& allocator =
-                    ::zserio::pmr::PolymorphicAllocator<void>());
+            const ALLOC& allocator = ALLOC());
 
     ~ChildStruct() = default;
 
@@ -32,7 +32,7 @@ public:
 
     uint64_t getUint64Field() const;
 
-    const ::zserio::pmr::vector<uint16_t>& getUint16Array() const;
+    const std::vector<uint16_t, ::zserio::RebindAlloc<ALLOC, uint16_t>>& getUint16Array() const;
 
     size_t bitSizeOf(size_t bitPosition = 0) const;
 
@@ -44,13 +44,15 @@ public:
 private:
     uint64_t readUint64Field(::zserio::BitStreamReader& in);
 
-    ::zserio::pmr::vector<uint16_t> readUint16Array(::zserio::BitStreamReader& in,
-            const ::zserio::pmr::PolymorphicAllocator<void>& alloc);
+    std::vector<uint16_t, ::zserio::RebindAlloc<ALLOC, uint16_t>> readUint16Array(
+            ::zserio::BitStreamReader& in, const ALLOC& alloc);
 
     uint64_t m_uint64Field_;
-    ::zserio::pmr::vector<uint16_t> m_uint16Array_;
+    std::vector<uint16_t, ::zserio::RebindAlloc<ALLOC, uint16_t>> m_uint16Array_;
 };
 
 } // namespace pmr_poc
+
+#include "ChildStruct.hpp"
 
 #endif // PMR_POC_CHILD_STRUCT_H

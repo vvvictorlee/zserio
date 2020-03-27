@@ -86,29 +86,36 @@ int main(int argc, char* argv[])
     writeSampleStructure(writer);
     size_t bufferSize = 0;
     const uint8_t* buffer = writer.getWriteBuffer(bufferSize);
-    zserio::BitStreamReader reader(buffer, bufferSize);
 
     {
-        TestResource resource;
+        zserio::BitStreamReader reader(buffer, bufferSize);
 
+        using SampleStruct = pmr_poc::SampleStruct<zserio::pmr::PolymorphicAllocator<void>>;
+        TestResource resource;
 #if 0
-        zserio::pmr::PolymorphicAllocator<pmr_poc::SampleStruct> allocator(resource);
+        zserio::pmr::PolymorphicAllocator<SampleStruct> allocator(resource);
 #   if 0
-        std::shared_ptr<pmr_poc::SampleStruct> sampleStruct =
-                std::allocate_shared<pmr_poc::SampleStruct>(allocator, reader, resource);
+        std::shared_ptr<SampleStruct> sampleStruct =
+                std::allocate_shared<SampleStruct>(allocator, reader, resource);
 #   else
-        pmr_poc::SampleStruct* sampleStruct =
-                new (allocator.allocate(1)) pmr_poc::SampleStruct(reader, resource);
+        SampleStruct* sampleStruct =
+                new (allocator.allocate(1)) SampleStruct(reader, resource);
         sampleStruct->~SampleStruct();
         allocator.deallocate(sampleStruct, 1);
 #   endif
 #else
-        pmr_poc::SampleStruct* sampleStruct =
-                new (resource.allocate(sizeof(pmr_poc::SampleStruct), alignof(pmr_poc::SampleStruct)))
-                        pmr_poc::SampleStruct(reader, resource);
+        SampleStruct* sampleStruct =
+                new (resource.allocate(sizeof(SampleStruct), alignof(SampleStruct))) SampleStruct(reader);
         sampleStruct->~SampleStruct();
-        resource.deallocate(sampleStruct, sizeof(pmr_poc::SampleStruct), alignof(pmr_poc::SampleStruct));
+        resource.deallocate(sampleStruct, sizeof(SampleStruct), alignof(SampleStruct));
 #endif
+    }
+
+    {
+        zserio::BitStreamReader reader(buffer, bufferSize);
+
+        using SampleStruct = pmr_poc::SampleStruct<>;
+        SampleStruct sampleStruct(reader);
     }
 
     return 0;

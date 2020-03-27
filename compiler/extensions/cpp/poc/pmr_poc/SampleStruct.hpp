@@ -14,30 +14,36 @@
 namespace pmr_poc
 {
 
-SampleStruct::SampleStruct(::zserio::BitStreamReader& in,
-        const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
+template <typename ALLOC>
+SampleStruct<ALLOC>::SampleStruct(::zserio::BitStreamReader& in,
+        const ALLOC& allocator) :
         m_uint8Field_(readUint8Field(in)),
         m_stringField_(readStringField(in, allocator)),
         m_childField_(readChildField(in, allocator))
 {
 }
 
-uint8_t SampleStruct::getUint8Field() const
+template <typename ALLOC>
+uint8_t SampleStruct<ALLOC>::getUint8Field() const
 {
     return m_uint8Field_;
 }
 
-const ::zserio::pmr::string& SampleStruct::getStringField() const
+template <typename ALLOC>
+const std::basic_string<char, std::char_traits<char>, ::zserio::RebindAlloc<ALLOC, char>>&
+SampleStruct<ALLOC>::getStringField() const
 {
     return m_stringField_;
 }
 
-const ::pmr_poc::ChildStruct& SampleStruct::getChildField() const
+template <typename ALLOC>
+const ::pmr_poc::ChildStruct<ALLOC>& SampleStruct<ALLOC>::getChildField() const
 {
     return m_childField_;
 }
 
-size_t SampleStruct::bitSizeOf(size_t bitPosition) const
+template <typename ALLOC>
+size_t SampleStruct<ALLOC>::bitSizeOf(size_t bitPosition) const
 {
     size_t endBitPosition = bitPosition;
 
@@ -48,7 +54,8 @@ size_t SampleStruct::bitSizeOf(size_t bitPosition) const
     return endBitPosition - bitPosition;
 }
 
-bool SampleStruct::operator==(const SampleStruct& other) const
+template <typename ALLOC>
+bool SampleStruct<ALLOC>::operator==(const SampleStruct& other) const
 {
     if (this != &other)
     {
@@ -61,7 +68,8 @@ bool SampleStruct::operator==(const SampleStruct& other) const
     return true;
 }
 
-int SampleStruct::hashCode() const
+template <typename ALLOC>
+int SampleStruct<ALLOC>::hashCode() const
 {
     int result = ::zserio::HASH_SEED;
 
@@ -72,21 +80,24 @@ int SampleStruct::hashCode() const
     return result;
 }
 
-uint8_t SampleStruct::readUint8Field(::zserio::BitStreamReader& in)
+template <typename ALLOC>
+uint8_t SampleStruct<ALLOC>::readUint8Field(::zserio::BitStreamReader& in)
 {
     return static_cast<uint8_t>(in.readBits(UINT8_C(8)));
 }
 
-::zserio::pmr::string SampleStruct::readStringField(::zserio::BitStreamReader& in,
-        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+template <typename ALLOC>
+std::basic_string<char, std::char_traits<char>, ::zserio::RebindAlloc<ALLOC, char>>
+SampleStruct<ALLOC>::readStringField(::zserio::BitStreamReader& in, const ALLOC& allocator)
 {
     return in.readString(allocator);
 }
 
-::pmr_poc::ChildStruct SampleStruct::readChildField(::zserio::BitStreamReader& in,
-        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+template <typename ALLOC>
+::pmr_poc::ChildStruct<ALLOC> SampleStruct<ALLOC>::readChildField(::zserio::BitStreamReader& in,
+        const ALLOC& allocator)
 {
-    return ::pmr_poc::ChildStruct(in, allocator);
+    return ::pmr_poc::ChildStruct<ALLOC>(in, allocator);
 }
 
 } // namespace pmr_poc

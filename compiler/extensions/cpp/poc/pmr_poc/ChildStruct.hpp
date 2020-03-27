@@ -14,24 +14,28 @@
 namespace pmr_poc
 {
 
-ChildStruct::ChildStruct(::zserio::BitStreamReader& in,
-        const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
+template <typename ALLOC>
+ChildStruct<ALLOC>::ChildStruct(::zserio::BitStreamReader& in,
+        const ALLOC& allocator) :
         m_uint64Field_(readUint64Field(in)),
         m_uint16Array_(readUint16Array(in, allocator))
 {
 }
 
-uint64_t ChildStruct::getUint64Field() const
+template <typename ALLOC>
+uint64_t ChildStruct<ALLOC>::getUint64Field() const
 {
     return m_uint64Field_;
 }
 
-const ::zserio::pmr::vector<uint16_t>& ChildStruct::getUint16Array() const
+template <typename ALLOC>
+const std::vector<uint16_t, ::zserio::RebindAlloc<ALLOC, uint16_t>>& ChildStruct<ALLOC>::getUint16Array() const
 {
     return m_uint16Array_;
 }
 
-size_t ChildStruct::bitSizeOf(size_t bitPosition) const
+template <typename ALLOC>
+size_t ChildStruct<ALLOC>::bitSizeOf(size_t bitPosition) const
 {
     size_t endBitPosition = bitPosition;
 
@@ -42,7 +46,8 @@ size_t ChildStruct::bitSizeOf(size_t bitPosition) const
     return endBitPosition - bitPosition;
 }
 
-bool ChildStruct::operator==(const ChildStruct& other) const
+template <typename ALLOC>
+bool ChildStruct<ALLOC>::operator==(const ChildStruct& other) const
 {
     if (this != &other)
     {
@@ -54,7 +59,8 @@ bool ChildStruct::operator==(const ChildStruct& other) const
     return true;
 }
 
-int ChildStruct::hashCode() const
+template <typename ALLOC>
+int ChildStruct<ALLOC>::hashCode() const
 {
     int result = ::zserio::HASH_SEED;
 
@@ -64,15 +70,17 @@ int ChildStruct::hashCode() const
     return result;
 }
 
-uint64_t ChildStruct::readUint64Field(::zserio::BitStreamReader& in)
+template <typename ALLOC>
+uint64_t ChildStruct<ALLOC>::readUint64Field(::zserio::BitStreamReader& in)
 {
     return static_cast<uint64_t>(in.readBits64(UINT8_C(64)));
 }
 
-::zserio::pmr::vector<uint16_t> ChildStruct::readUint16Array(::zserio::BitStreamReader& in,
-        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+template <typename ALLOC>
+std::vector<uint16_t, ::zserio::RebindAlloc<ALLOC, uint16_t>> ChildStruct<ALLOC>::readUint16Array(
+        ::zserio::BitStreamReader& in, const ALLOC& allocator)
 {
-    ::zserio::pmr::vector<uint16_t> readField{allocator};
+    std::vector<uint16_t, ::zserio::RebindAlloc<ALLOC, uint16_t>> readField{allocator};
     ::zserio::readAuto(::zserio::StdIntArrayTraits<uint16_t>(), readField, in);
     return readField;
 }

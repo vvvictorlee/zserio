@@ -16,12 +16,11 @@
 namespace pmr_poc
 {
 
+template <typename ALLOC = std::allocator<void>>
 class SampleStruct
 {
 public:
-    explicit SampleStruct(::zserio::BitStreamReader& in,
-            const ::zserio::pmr::PolymorphicAllocator<void>& allocator =
-                        ::zserio::pmr::PolymorphicAllocator<void>());
+    explicit SampleStruct(::zserio::BitStreamReader& in, const ALLOC& allocator = ALLOC());
 
     ~SampleStruct() = default;
 
@@ -33,9 +32,10 @@ public:
 
     uint8_t getUint8Field() const;
 
-    const ::zserio::pmr::string& getStringField() const;
+    const std::basic_string<char, std::char_traits<char>, ::zserio::RebindAlloc<ALLOC, char>>&
+    getStringField() const;
 
-    const ::pmr_poc::ChildStruct& getChildField() const;
+    const ::pmr_poc::ChildStruct<ALLOC>& getChildField() const;
 
     size_t bitSizeOf(size_t bitPosition = 0) const;
 
@@ -44,16 +44,17 @@ public:
 
 private:
     uint8_t readUint8Field(::zserio::BitStreamReader& in);
-    ::zserio::pmr::string readStringField(::zserio::BitStreamReader& in,
-            const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
-    ::pmr_poc::ChildStruct readChildField(::zserio::BitStreamReader& in,
-            const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
+    std::basic_string<char, std::char_traits<char>, ::zserio::RebindAlloc<ALLOC, char>> readStringField(
+                ::zserio::BitStreamReader& in, const ALLOC& allocator);
+    ::pmr_poc::ChildStruct<ALLOC> readChildField(::zserio::BitStreamReader& in, const ALLOC& allocator);
 
     uint8_t m_uint8Field_;
-    ::zserio::pmr::string m_stringField_;
-    ::pmr_poc::ChildStruct m_childField_;
+    std::basic_string<char, std::char_traits<char>, ::zserio::RebindAlloc<ALLOC, char>> m_stringField_;
+    ::pmr_poc::ChildStruct<ALLOC> m_childField_;
 };
 
 } // namespace pmr_poc
+
+#include "SampleStruct.hpp"
 
 #endif // PMR_POC_SAMPLE_STRUCT_H
