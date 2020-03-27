@@ -59,6 +59,13 @@ set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/Types.h
     zserio/VarUInt64Util.cpp
     zserio/VarUInt64Util.h
+    zserio/pmr/MemoryResource.cpp
+    zserio/pmr/MemoryResource.h
+    zserio/pmr/NewDeleteResource.cpp
+    zserio/pmr/NewDeleteResource.h
+    zserio/pmr/PolymorphicAllocator.h
+    zserio/pmr/String.h
+    zserio/pmr/Vector.h
 )
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)

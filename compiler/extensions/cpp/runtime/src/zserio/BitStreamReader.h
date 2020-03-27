@@ -2,10 +2,11 @@
 #define ZSERIO_BIT_STREAM_READER_H_INC
 
 #include <cstddef>
-#include <string>
 
+#include "zserio/pmr/String.h"
 #include "zserio/Types.h"
 #include "zserio/BitBuffer.h"
+#include "zserio/VarUInt64Util.h"
 
 namespace zserio
 {
@@ -213,7 +214,18 @@ public:
      *
      * \return Read string.
      */
-    std::string readString();
+    template <template <typename> typename ALLOC>
+    std::basic_string<char, std::char_traits<char>, ALLOC<char>> readString(const ALLOC<char>& alloc)
+    {
+        std::basic_string<char, std::char_traits<char>, ALLOC<char>> value{alloc};
+        const size_t len = convertVarUInt64ToArraySize(readVarUInt64());
+        value.reserve(len);
+        for (size_t i = 0; i < len; ++i)
+        {
+            value.push_back(readChar());
+        }
+        return value;
+    }
 
     /**
      * Reads bool as a single bit.
@@ -258,6 +270,8 @@ public:
     size_t getBufferBitSize() const { return m_context.bufferBitSize; }
 
 private:
+    uint8_t readChar();
+
     ReaderContext m_context;
 };
 

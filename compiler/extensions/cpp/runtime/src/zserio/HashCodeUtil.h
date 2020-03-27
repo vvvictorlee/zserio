@@ -179,10 +179,12 @@ namespace zserio
      *
      * \return Calculated hash code.
      */
-    inline int calcHashCode(int seedValue, const std::string& stringValue)
+    template <typename ALLOC>
+    inline int calcHashCode(int seedValue,
+            const std::basic_string<char, std::char_traits<char>, ALLOC>& stringValue)
     {
         int result = seedValue;
-        for (std::string::value_type element : stringValue)
+        for (typename std::basic_string<char, std::char_traits<char>, ALLOC>::value_type element : stringValue)
             result = calcHashCode(result, element);
 
         return result;
@@ -226,8 +228,8 @@ namespace zserio
      *
      * \return Calculated hash code.
      */
-    template <typename ARRAY_ELEMENT>
-    inline int calcHashCode(int seedValue, const std::vector<ARRAY_ELEMENT>& array)
+    template <typename ARRAY_ELEMENT, typename ALLOC>
+    inline int calcHashCode(int seedValue, const std::vector<ARRAY_ELEMENT, ALLOC>& array)
     {
         int result = seedValue;
         for (const ARRAY_ELEMENT& element : array)

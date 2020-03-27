@@ -7,7 +7,6 @@
 #include "zserio/StringConvertUtil.h"
 #include "zserio/FloatUtil.h"
 #include "zserio/BitStreamReader.h"
-#include "zserio/VarUInt64Util.h"
 
 namespace zserio
 {
@@ -684,18 +683,6 @@ double BitStreamReader::readFloat64()
     return convertUInt64ToDouble(doublePrecisionFloatValue);
 }
 
-std::string BitStreamReader::readString()
-{
-    std::string value;
-    const size_t len = convertVarUInt64ToArraySize(readVarUInt64());
-    value.reserve(len);
-    for (size_t i = 0; i < len; ++i)
-    {
-        value.push_back(static_cast<uint8_t>(readBitsImpl(m_context, 8)));
-    }
-    return value;
-}
-
 bool BitStreamReader::readBool()
 {
     return readBitsImpl(m_context, 1) != 0;
@@ -753,6 +740,11 @@ void BitStreamReader::alignTo(size_t alignment)
         const uint8_t skip = static_cast<uint8_t>(alignment - offset);
         readBits64(skip);
     }
+}
+
+uint8_t BitStreamReader::readChar()
+{
+    return static_cast<uint8_t>(readBitsImpl(m_context, 8));
 }
 
 } // namespace zserio

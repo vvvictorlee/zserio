@@ -255,16 +255,6 @@ void BitStreamWriter::writeFloat64(double data)
     writeUnsignedBits64(doublePrecisionFloat, 64);
 }
 
-void BitStreamWriter::writeString(const std::string& data)
-{
-    const size_t len = data.size();
-    BitStreamWriter::writeVarUInt64(len);
-    for (size_t i = 0; i < len; ++i)
-    {
-        BitStreamWriter::writeBits(static_cast<uint8_t>(data[i]), 8);
-    }
-}
-
 void BitStreamWriter::writeBool(bool data)
 {
     BitStreamWriter::writeBits((data ? 1 : 0), 1);

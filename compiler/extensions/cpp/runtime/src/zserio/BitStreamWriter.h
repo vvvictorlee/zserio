@@ -165,7 +165,16 @@ public:
      *
      * \param data String to write.
      */
-    void writeString(const std::string& data);
+    template <typename ALLOC>
+    void writeString(const std::basic_string<char, std::char_traits<char>, ALLOC>& data)
+    {
+        const size_t len = data.size();
+        BitStreamWriter::writeVarUInt64(len);
+        for (size_t i = 0; i < len; ++i)
+        {
+            BitStreamWriter::writeBits(static_cast<uint8_t>(data[i]), 8);
+        }
+    }
 
     /**
      * Writes bool as a single bit.

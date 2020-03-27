@@ -2,8 +2,9 @@
 #define ZSERIO_ARRAYS_H_INC
 
 #include <type_traits>
-#include <vector>
 
+#include "zserio/pmr/Vector.h"
+#include "zserio/pmr/String.h"
 #include "zserio/BitStreamWriter.h"
 #include "zserio/BitStreamReader.h"
 #include "zserio/BitPositionUtil.h"
@@ -23,7 +24,7 @@ namespace zserio
  * \param elementInitializer Initializer which knows how to initialize a single array element.
  */
 template <typename T, typename ELEMENT_INITIALIZER>
-void initializeElements(std::vector<T>& array, const ELEMENT_INITIALIZER& elementInitializer)
+void initializeElements(zserio::pmr::vector<T>& array, const ELEMENT_INITIALIZER& elementInitializer)
 {
     size_t index = 0;
     for (auto&& element : array)
@@ -43,7 +44,7 @@ void initializeElements(std::vector<T>& array, const ELEMENT_INITIALIZER& elemen
  * \return Bit size of the array.
  */
 template <typename ARRAY_TRAITS>
-size_t bitSizeOf(const ARRAY_TRAITS& arrayTraits, const std::vector<typename ARRAY_TRAITS::type>& array,
+size_t bitSizeOf(const ARRAY_TRAITS& arrayTraits, const zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         size_t bitPosition)
 {
     if (ARRAY_TRAITS::IS_BITSIZEOF_CONSTANT)
@@ -66,8 +67,8 @@ size_t bitSizeOf(const ARRAY_TRAITS& arrayTraits, const std::vector<typename ARR
  * \return Bit size of the array.
  */
 template <typename ARRAY_TRAITS>
-size_t bitSizeOfAligned(const ARRAY_TRAITS& arrayTraits, const std::vector<typename ARRAY_TRAITS::type>& array,
-        size_t bitPosition)
+size_t bitSizeOfAligned(const ARRAY_TRAITS& arrayTraits,
+        const zserio::pmr::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition)
 {
     size_t endBitPosition = bitPosition;
     const size_t arraySize = array.size();
@@ -99,7 +100,7 @@ size_t bitSizeOfAligned(const ARRAY_TRAITS& arrayTraits, const std::vector<typen
  * \return Bit size of the array.
  */
 template <typename ARRAY_TRAITS>
-size_t bitSizeOfAuto(const ARRAY_TRAITS& arrayTraits, const std::vector<typename ARRAY_TRAITS::type>& array,
+size_t bitSizeOfAuto(const ARRAY_TRAITS& arrayTraits, const zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         size_t bitPosition)
 {
     const size_t lengthBitSizeOf = zserio::bitSizeOfVarUInt64(array.size());
@@ -118,7 +119,7 @@ size_t bitSizeOfAuto(const ARRAY_TRAITS& arrayTraits, const std::vector<typename
  */
 template <typename ARRAY_TRAITS>
 size_t bitSizeOfAlignedAuto(const ARRAY_TRAITS& arrayTraits,
-        const std::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition)
+        const zserio::pmr::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition)
 {
     const size_t lengthBitSizeOf = zserio::bitSizeOfVarUInt64(array.size());
 
@@ -135,7 +136,7 @@ size_t bitSizeOfAlignedAuto(const ARRAY_TRAITS& arrayTraits,
  * \return Updated bit position which points to the first bit after the array.
  */
 template <typename ARRAY_TRAITS>
-size_t initializeOffsets(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+size_t initializeOffsets(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         size_t bitPosition)
 {
     if (ARRAY_TRAITS::IS_BITSIZEOF_CONSTANT)
@@ -145,7 +146,7 @@ size_t initializeOffsets(const ARRAY_TRAITS& arrayTraits, std::vector<typename A
     }
 
     size_t endBitPosition = bitPosition;
-    // can't use 'typename ARRAY_TRAITS::type&' because std::vector<bool> returns rvalue
+    // can't use 'typename ARRAY_TRAITS::type&' because zserio::pmr::vector<bool> returns rvalue
     for (auto&& element : array)
         endBitPosition = arrayTraits.initializeOffsets(endBitPosition, element);
 
@@ -164,12 +165,12 @@ size_t initializeOffsets(const ARRAY_TRAITS& arrayTraits, std::vector<typename A
  */
 template <typename ARRAY_TRAITS, typename OFFSET_INITIALIZER>
 size_t initializeOffsetsAligned(const ARRAY_TRAITS& arrayTraits,
-        std::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition,
+        zserio::pmr::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition,
         const OFFSET_INITIALIZER& offsetInitializer)
 {
     size_t endBitPosition = bitPosition;
     size_t index = 0;
-    // can't use 'typename ARRAY_TRAITS::type&' because std::vector<bool> returns rvalue
+    // can't use 'typename ARRAY_TRAITS::type&' because zserio::pmr::vector<bool> returns rvalue
     for (auto&& element : array)
     {
         endBitPosition = alignTo(8, endBitPosition);
@@ -191,8 +192,8 @@ size_t initializeOffsetsAligned(const ARRAY_TRAITS& arrayTraits,
  * \return Updated bit position which points to the first bit after the array.
  */
 template <typename ARRAY_TRAITS>
-size_t initializeOffsetsAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
-        size_t bitPosition)
+size_t initializeOffsetsAuto(const ARRAY_TRAITS& arrayTraits,
+        zserio::pmr::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition)
 {
     return initializeOffsets(arrayTraits, array, bitPosition + zserio::bitSizeOfVarUInt64(array.size()));
 }
@@ -209,7 +210,7 @@ size_t initializeOffsetsAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typena
  */
 template <typename ARRAY_TRAITS, typename OFFSET_INITIALIZER>
 size_t initializeOffsetsAlignedAuto(const ARRAY_TRAITS& arrayTraits,
-        std::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition,
+        zserio::pmr::vector<typename ARRAY_TRAITS::type>& array, size_t bitPosition,
         const OFFSET_INITIALIZER& offsetInitializer)
 {
     return initializeOffsetsAligned(arrayTraits, array, bitPosition + zserio::bitSizeOfVarUInt64(array.size()),
@@ -225,8 +226,8 @@ size_t initializeOffsetsAlignedAuto(const ARRAY_TRAITS& arrayTraits,
  * \param size Size of the array to read.
  */
 template <typename ARRAY_TRAITS>
-void read(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array, BitStreamReader& in,
-        size_t size)
+void read(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
+        BitStreamReader& in, size_t size)
 {
     array.clear();
     array.reserve(size);
@@ -244,7 +245,7 @@ void read(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::ty
  * \param offsetChecker Offset checker used to check offsets before reading.
  */
 template <typename ARRAY_TRAITS, typename OFFSET_CHECKER>
-void readAligned(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void readAligned(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamReader& in, size_t size, const OFFSET_CHECKER& offsetChecker)
 {
     array.clear();
@@ -265,7 +266,7 @@ void readAligned(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRA
  * \param in Bit stream reader.
  */
 template <typename ARRAY_TRAITS>
-void readAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void readAuto(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamReader& in)
 {
     const uint64_t arraySize = in.readVarUInt64();
@@ -281,7 +282,7 @@ void readAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS
  * \param offsetChecker Offset checker used to check offsets before reading.
  */
 template <typename ARRAY_TRAITS, typename OFFSET_CHECKER>
-void readAlignedAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void readAlignedAuto(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamReader& in, const OFFSET_CHECKER& offsetChecker)
 {
     const uint64_t arraySize = in.readVarUInt64();
@@ -296,7 +297,7 @@ void readAlignedAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY
  * \param in Bit stream reader.
  */
 template <typename ARRAY_TRAITS>
-void readImplicit(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void readImplicit(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamReader& in)
 {
     static_assert(arrayTraits.IS_BITSIZEOF_CONSTANT, "Implicit array elements must have constant bit size!");
@@ -313,10 +314,10 @@ void readImplicit(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TR
  * \param out Bit stream writer
  */
 template <typename ARRAY_TRAITS>
-void write(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void write(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamWriter& out)
 {
-    // can't use 'typename ARRAY_TRAITS::type&' because std::vector<bool> returns rvalue
+    // can't use 'typename ARRAY_TRAITS::type&' because zserio::pmr::vector<bool> returns rvalue
     for (auto&& element : array)
         arrayTraits.write(out, element);
 }
@@ -330,11 +331,11 @@ void write(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::t
  * \param offsetChecker Offset checker used to check offsets before writing.
  */
 template <typename ARRAY_TRAITS, typename OFFSET_CHECKER>
-void writeAligned(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void writeAligned(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamWriter& out, const OFFSET_CHECKER& offsetChecker)
 {
     size_t index = 0;
-    // can't use 'typename ARRAY_TRAITS::type&' because std::vector<bool> returns rvalue
+    // can't use 'typename ARRAY_TRAITS::type&' because zserio::pmr::vector<bool> returns rvalue
     for (auto&& element : array)
     {
         out.alignTo(8);
@@ -352,7 +353,7 @@ void writeAligned(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TR
  * \param out Bit stream writer
  */
 template <typename ARRAY_TRAITS>
-void writeAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void writeAuto(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamWriter& out)
 {
     out.writeVarUInt64(static_cast<uint64_t>(array.size()));
@@ -368,7 +369,7 @@ void writeAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAIT
  * \param offsetChecker Offset checker used to check offsets before writing.
  */
 template <typename ARRAY_TRAITS, typename OFFSET_CHECKER>
-void writeAlignedAuto(const ARRAY_TRAITS& arrayTraits, std::vector<typename ARRAY_TRAITS::type>& array,
+void writeAlignedAuto(const ARRAY_TRAITS& arrayTraits, zserio::pmr::vector<typename ARRAY_TRAITS::type>& array,
         BitStreamWriter& out, const OFFSET_CHECKER& offsetChecker)
 {
     out.writeVarUInt64(static_cast<uint64_t>(array.size()));
@@ -539,7 +540,7 @@ public:
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    void read(std::vector<type>& array, BitStreamReader& in, size_t) const
+    void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t) const
     {
         array.push_back(detail::read_bits<type>(in, m_numBits));
     }
@@ -609,7 +610,7 @@ struct StdIntArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(detail::read_bits<type>(in, NUM_BITS));
     }
@@ -678,7 +679,7 @@ struct VarIntNNArrayTraits<int16_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarInt16());
     }
@@ -739,7 +740,7 @@ struct VarIntNNArrayTraits<int32_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarInt32());
     }
@@ -799,7 +800,7 @@ struct VarIntNNArrayTraits<int64_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarInt64());
     }
@@ -859,7 +860,7 @@ struct VarIntNNArrayTraits<uint16_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarUInt16());
     }
@@ -919,7 +920,7 @@ struct VarIntNNArrayTraits<uint32_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarUInt32());
     }
@@ -979,7 +980,7 @@ struct VarIntNNArrayTraits<uint64_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarUInt64());
     }
@@ -1045,7 +1046,7 @@ struct VarIntArrayTraits<int64_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarInt());
     }
@@ -1105,7 +1106,7 @@ struct VarIntArrayTraits<uint64_t>
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readVarUInt());
     }
@@ -1172,7 +1173,7 @@ struct Float16ArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readFloat16());
     }
@@ -1239,7 +1240,7 @@ struct Float32ArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readFloat32());
     }
@@ -1306,7 +1307,7 @@ struct Float64ArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readFloat64());
     }
@@ -1373,7 +1374,7 @@ struct BoolArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readBool());
     }
@@ -1396,10 +1397,11 @@ struct BoolArrayTraits
 /**
  * Array traits for Zserio string type.
  */
-struct StringArrayTraits
+class StringArrayTraits
 {
+public:
     /** Type of the single array element. */
-    typedef std::string type;
+    typedef zserio::pmr::string type;
 
     /**
      * Calculates bit size of the array element.
@@ -1432,9 +1434,10 @@ struct StringArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
-        array.push_back(in.readString());
+        array.push_back(in.readString<zserio::pmr::PolymorphicAllocator>(
+                array.get_allocator().resource()));
     }
 
     /**
@@ -1491,7 +1494,7 @@ struct BitBufferArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(in.readBitBuffer());
     }
@@ -1551,7 +1554,7 @@ struct EnumArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.push_back(zserio::read<type>(in));
     }
@@ -1612,7 +1615,7 @@ struct BitmaskArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    static void read(std::vector<type>& array, BitStreamReader& in, size_t)
+    static void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t)
     {
         array.emplace_back(in);
     }
@@ -1659,7 +1662,7 @@ public:
      * \param in Bit stream reader.
      * \param index Index need in case of parameterized type which depends on the current index.
      */
-    void read(std::vector<type>& array, BitStreamReader& in, size_t index) const
+    void read(zserio::pmr::vector<type>& array, BitStreamReader& in, size_t index) const
     {
         m_elementFactory.create(array, in, index);
     }

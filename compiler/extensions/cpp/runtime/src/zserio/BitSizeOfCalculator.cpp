@@ -163,14 +163,6 @@ size_t bitSizeOfVarUInt(uint64_t value)
     return bitSizeOfVarIntImpl(value, VarUIntMaxValues, VarUIntMaxNumValues);
 }
 
-size_t bitSizeOfString(const std::string& stringValue)
-{
-    const size_t stringSize = stringValue.size();
-
-    // the string consists of varuint64 for size followed by the UTF-8 encoded string
-    return bitSizeOfVarUInt64(static_cast<uint64_t>(stringSize)) + bytesToBits(stringSize);
-}
-
 size_t bitSizeOfBitBuffer(const BitBuffer& bitBuffer)
 {
     const size_t bitBufferSize = bitBuffer.getBitSize();

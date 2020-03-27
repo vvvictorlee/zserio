@@ -89,7 +89,14 @@ size_t bitSizeOfVarUInt(uint64_t value);
  *
  * \return Bit size of the given string.
  */
-size_t bitSizeOfString(const std::string& stringValue);
+template <typename ALLOC>
+size_t bitSizeOfString(const std::basic_string<char, std::char_traits<char>, ALLOC>& stringValue)
+{
+    const size_t stringSize = stringValue.size();
+
+    // the string consists of varuint64 for size followed by the UTF-8 encoded string
+    return bitSizeOfVarUInt64(static_cast<uint64_t>(stringSize)) + bytesToBits(stringSize);
+}
 
 /**
  * Calculates bit size of the bit buffer.
