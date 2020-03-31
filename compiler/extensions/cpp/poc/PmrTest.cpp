@@ -105,7 +105,8 @@ int main(int argc, char* argv[])
 #   endif
 #else
         SampleStruct* sampleStruct =
-                new (resource.allocate(sizeof(SampleStruct), alignof(SampleStruct))) SampleStruct(reader);
+                new (resource.allocate(sizeof(SampleStruct), alignof(SampleStruct)))
+                        SampleStruct(reader, resource);
         sampleStruct->~SampleStruct();
         resource.deallocate(sampleStruct, sizeof(SampleStruct), alignof(SampleStruct));
 #endif
