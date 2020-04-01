@@ -1,11 +1,16 @@
 #include <limits>
 #include <algorithm>
-#include <iomanip>
 #include <memory>
-#include "zserio/pmr/Vector.h"
 
+#if ZSERIO_MEMORY_RESOURCE_TRACING
+#   include <iomanip>
+#   include <iostream>
+#endif
+
+#include "zserio/pmr/Vector.h"
 #include "pmr_poc/SampleStruct.h"
 
+template <size_t BUFFER_SIZE=256>
 class TestResource : public zserio::pmr::MemoryResource
 {
 public:
@@ -16,6 +21,7 @@ public:
 
     ~TestResource()
     {
+#if ZSERIO_MEMORY_RESOURCE_TRACING
         static constexpr size_t COLUMN_WIDTH = 16;
 
         for (size_t pos = 0; pos < BUFFER_SIZE; ++pos)
@@ -27,6 +33,7 @@ public:
         }
         if (BUFFER_SIZE % COLUMN_WIDTH != 0)
             std::cout << std::endl;
+#endif
     }
 
     virtual void* doAllocate(size_t bytes, size_t align) override
@@ -54,11 +61,12 @@ public:
     }
 
 private:
-    static constexpr size_t BUFFER_SIZE = 256;
     uint8_t m_buffer[BUFFER_SIZE];
     uint8_t* m_nextPtr = m_buffer;
 };
 
+//#define ENABLE_WRITER
+#ifdef ENABLE_WRITER
 void writeSampleStructure(zserio::BitStreamWriter& writer)
 {
     // uint8Field
@@ -79,17 +87,31 @@ void writeSampleStructure(zserio::BitStreamWriter& writer)
             writer.writeBits(static_cast<uint16_t>(i), 16);
     }
 }
+#endif
 
 int main(int argc, char* argv[])
 {
+#ifdef ENABLE_WRITER
     zserio::BitStreamWriter writer;
     writeSampleStructure(writer);
     size_t bufferSize = 0;
     const uint8_t* buffer = writer.getWriteBuffer(bufferSize);
-    zserio::BitStreamReader reader(buffer, bufferSize);
+#else
+    const uint8_t buffer[] =
+    {
+        0xff, 0x30, 0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x74, 0x65,
+        0x73, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x20, 0x6c, 0x6f, 0x6e, 0x67, 0x20, 0x65,
+        0x6e, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x74, 0x6f, 0x20, 0x61, 0x6c, 0x6c, 0x6f, 0x63, 0x61, 0x74,
+        0x65, 0x21, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0d, 0x00, 0x00, 0x00, 0x01, 0x00,
+        0x02, 0x00, 0x03, 0x00, 0x04, 0x00, 0x05, 0x00, 0x06, 0x00, 0x07, 0x00, 0x08, 0x00, 0x09, 0x00,
+        0x0a, 0x00, 0x0b, 0x00, 0x0c
+    };
+    const size_t bufferSize = sizeof(buffer);
+#endif
 
     {
-        TestResource resource;
+        TestResource<> resource;
+        zserio::BitStreamReader reader(buffer, bufferSize);
 
 #if 0
         zserio::pmr::PolymorphicAllocator<pmr_poc::SampleStruct> allocator(resource);
