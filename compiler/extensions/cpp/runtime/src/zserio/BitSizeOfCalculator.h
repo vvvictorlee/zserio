@@ -105,7 +105,14 @@ size_t bitSizeOfString(const std::basic_string<char, std::char_traits<char>, ALL
  *
  * \return Bit size of the given bit buffer.
  */
-size_t bitSizeOfBitBuffer(const BitBuffer& bitBuffer);
+template <typename ALLOC>
+size_t bitSizeOfBitBuffer(const detail::BitBuffer<ALLOC>& bitBuffer)
+{
+    const size_t bitBufferSize = bitBuffer.getBitSize();
+
+    // bit buffer consists of varuint64 for bit size followed by the bits
+    return bitSizeOfVarUInt64(static_cast<uint64_t>(bitBufferSize)) + bitBufferSize;
+}
 
 } // namespace zserio
 

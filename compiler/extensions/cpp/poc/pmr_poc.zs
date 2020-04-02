@@ -2,13 +2,15 @@ package pmr_poc;
 
 struct ChildStruct
 {
-    uint64 uint64Field;
     uint16 uint16Array[];
+    string stringArray[];
+    extern externArray[];
 };
 
 struct SampleStruct
 {
-    uint8 uint8Field;
+    uint16 uint16Field;
     string stringField;
+    extern externField;
     ChildStruct childField;
 };

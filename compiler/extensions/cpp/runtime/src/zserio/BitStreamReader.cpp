@@ -1,5 +1,4 @@
 #include <limits>
-#include <cstring>
 #include <fstream>
 
 #include "zserio/BitStreamException.h"
@@ -354,10 +353,6 @@ BitStreamReader::BitStreamReader(const uint8_t* buffer, size_t bufferByteSize) :
         m_context(buffer, bufferByteSize * 8)
 {}
 
-BitStreamReader::BitStreamReader(const BitBuffer& bitBuffer) :
-        m_context(bitBuffer.getBuffer(), bitBuffer.getBitSize())
-{}
-
 BitStreamReader::BitStreamReader(const std::string& filename) : m_context(filename)
 {}
 
@@ -686,38 +681,6 @@ double BitStreamReader::readFloat64()
 bool BitStreamReader::readBool()
 {
     return readBitsImpl(m_context, 1) != 0;
-}
-
-BitBuffer BitStreamReader::readBitBuffer()
-{
-    const size_t bitSize = convertVarUInt64ToArraySize(readVarUInt64());
-    size_t numBytesToRead = bitSize / 8;
-    const uint8_t numRestBits = static_cast<uint8_t>(bitSize - numBytesToRead * 8);
-    BitBuffer bitBuffer(bitSize);
-    uint8_t* buffer = bitBuffer.getBuffer();
-    const BitPosType beginBitPosition = getBitPosition();
-    if ((beginBitPosition & 0x07) != 0)
-    {
-        // we are not aligned to byte
-        while (numBytesToRead > 0)
-        {
-            *buffer = static_cast<uint8_t>(readBits(8));
-            buffer++;
-            numBytesToRead--;
-        }
-    }
-    else
-    {
-        // we are aligned to byte
-        setBitPosition(beginBitPosition + numBytesToRead * 8);
-        memcpy(buffer, m_context.buffer + beginBitPosition / 8, numBytesToRead);
-        buffer += numBytesToRead;
-    }
-
-    if (numRestBits > 0)
-        *buffer = static_cast<uint8_t>(readBits(numRestBits));
-
-    return bitBuffer;
 }
 
 void BitStreamReader::setBitPosition(BitPosType position)

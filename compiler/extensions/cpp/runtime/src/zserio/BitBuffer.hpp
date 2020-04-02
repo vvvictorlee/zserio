@@ -1,29 +1,40 @@
+#ifndef ZSERIO_BIT_BUFFER_HPP_INC
+#define ZSERIO_BIT_BUFFER_HPP_INC
+
 #include <utility>
 #include <cstring>
 
+#include "zserio/HashCodeUtil.h"
 #include "zserio/CppRuntimeException.h"
 #include "zserio/StringConvertUtil.h"
-#include "zserio/HashCodeUtil.h"
-#include "zserio/BitBuffer.h"
 
 namespace zserio
 {
 
-BitBuffer::BitBuffer() : m_bitSize(0)
+namespace detail
+{
+
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(const ALLOC& allocator) :
+        m_buffer(allocator), m_bitSize(0)
 {
 }
 
-BitBuffer::BitBuffer(size_t bitSize) : m_buffer((bitSize + 7) / 8), m_bitSize(bitSize)
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(size_t bitSize, const ALLOC& allocator) :
+        m_buffer((bitSize + 7) / 8, allocator), m_bitSize(bitSize)
 {
 }
 
-BitBuffer::BitBuffer(const std::vector<uint8_t>& buffer) :
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(const std::vector<uint8_t, ALLOC>& buffer) :
         m_buffer(buffer), m_bitSize(8 * buffer.size())
 {
 }
 
-BitBuffer::BitBuffer(const std::vector<uint8_t>& buffer, size_t bitSize) :
-        m_bitSize(bitSize)
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(const std::vector<uint8_t, ALLOC>& buffer, size_t bitSize) :
+        m_buffer(buffer.get_allocator()), m_bitSize(bitSize)
 {
     const size_t byteSize = (bitSize + 7) / 8;
     if (buffer.size() < byteSize)
@@ -33,12 +44,14 @@ BitBuffer::BitBuffer(const std::vector<uint8_t>& buffer, size_t bitSize) :
     m_buffer.assign(buffer.data(), buffer.data() + byteSize);
 }
 
-BitBuffer::BitBuffer(std::vector<uint8_t>&& buffer) :
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(std::vector<uint8_t, ALLOC>&& buffer) :
         m_buffer(std::move(buffer)), m_bitSize(8 * m_buffer.size())
 {
 }
 
-BitBuffer::BitBuffer(std::vector<uint8_t>&& buffer, size_t bitSize) :
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(std::vector<uint8_t, ALLOC>&& buffer, size_t bitSize) :
         m_buffer(std::move(buffer)), m_bitSize(bitSize)
 {
     const size_t byteSize = (bitSize + 7) / 8;
@@ -47,12 +60,14 @@ BitBuffer::BitBuffer(std::vector<uint8_t>&& buffer, size_t bitSize) :
                 " out of range for given vector byte size " + convertToString(buffer.size()) + "!");
 }
 
-BitBuffer::BitBuffer(const uint8_t* buffer, size_t bitSize) :
-        m_buffer(buffer, buffer + (bitSize + 7) / 8), m_bitSize(bitSize)
+template <typename ALLOC>
+BitBuffer<ALLOC>::BitBuffer(const uint8_t* buffer, size_t bitSize, const ALLOC& allocator) :
+        m_buffer(buffer, buffer + (bitSize + 7) / 8, allocator), m_bitSize(bitSize)
 {
 }
 
-bool BitBuffer::operator==(const BitBuffer& other) const
+template <typename ALLOC>
+bool BitBuffer<ALLOC>::operator==(const BitBuffer<ALLOC>& other) const
 {
     if (this != &other)
     {
@@ -76,7 +91,8 @@ bool BitBuffer::operator==(const BitBuffer& other) const
     return true;
 }
 
-int BitBuffer::hashCode() const
+template <typename ALLOC>
+int BitBuffer<ALLOC>::hashCode() const
 {
     int result = ::zserio::HASH_SEED;
     const size_t byteSize = getByteSize();
@@ -94,27 +110,32 @@ int BitBuffer::hashCode() const
     return result;
 }
 
-const uint8_t* BitBuffer::getBuffer() const
+template <typename ALLOC>
+const uint8_t* BitBuffer<ALLOC>::getBuffer() const
 {
     return m_buffer.data();
 }
 
-uint8_t* BitBuffer::getBuffer()
+template <typename ALLOC>
+uint8_t* BitBuffer<ALLOC>::getBuffer()
 {
     return m_buffer.data();
 }
 
-size_t BitBuffer::getBitSize() const
+template <typename ALLOC>
+size_t BitBuffer<ALLOC>::getBitSize() const
 {
     return m_bitSize;
 }
 
-size_t BitBuffer::getByteSize() const
+template <typename ALLOC>
+size_t BitBuffer<ALLOC>::getByteSize() const
 {
     return (m_bitSize + 7) / 8;
 }
 
-uint8_t BitBuffer::getMaskedLastByte() const
+template <typename ALLOC>
+uint8_t BitBuffer<ALLOC>::getMaskedLastByte() const
 {
     const size_t roundedByteSize = m_bitSize / 8;
     const uint8_t lastByteBits = static_cast<uint8_t>(m_bitSize - 8 * roundedByteSize);
@@ -123,4 +144,8 @@ uint8_t BitBuffer::getMaskedLastByte() const
             (m_buffer[roundedByteSize] & (0xFF >> (8 - lastByteBits)));
 }
 
+} // namespace detail
+
 } // namespace zserio
+
+#endif // ZSERIO_BIT_BUFFER_HPP_INC

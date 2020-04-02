@@ -2,6 +2,7 @@
 #define ZSERIO_BIT_STREAM_WRITER_H_INC
 
 #include <cstddef>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -40,7 +41,11 @@ public:
      *
      * \param bitBuffer External bit buffer to create from.
      */
-    explicit BitStreamWriter(BitBuffer& bitBuffer);
+    template <typename ALLOC>
+    explicit BitStreamWriter(detail::BitBuffer<ALLOC>& bitBuffer):
+            BitStreamWriter(bitBuffer.getBuffer(), bitBuffer.getBitSize())
+    {
+    }
 
     /**
      * Destructor.
@@ -188,7 +193,37 @@ public:
      *
      * \param bitBuffer Bit buffer to write.
      */
-    void writeBitBuffer(const BitBuffer& bitBuffer);
+    template <typename ALLOC>
+    void writeBitBuffer(const detail::BitBuffer<ALLOC>& bitBuffer)
+    {
+        const size_t bitSize = bitBuffer.getBitSize();
+        writeVarUInt64(bitSize);
+
+        const uint8_t* buffer = bitBuffer.getBuffer();
+        size_t numBytesToWrite = bitSize / 8;
+        const uint8_t numRestBits = static_cast<uint8_t>(bitSize - numBytesToWrite * 8);
+        const BitPosType beginBitPosition = getBitPosition();
+        if ((beginBitPosition & 0x07) != 0)
+        {
+            // we are not aligned to byte
+            while (numBytesToWrite > 0)
+            {
+                writeUnsignedBits(*buffer, 8);
+                buffer++;
+                numBytesToWrite--;
+            }
+        }
+        else
+        {
+            // we are aligned to byte
+            setBitPosition(beginBitPosition + numBytesToWrite * 8);
+            memcpy(m_buffer + beginBitPosition / 8, buffer, numBytesToWrite);
+            buffer += numBytesToWrite;
+        }
+
+        if (numRestBits > 0)
+            writeUnsignedBits(*buffer, numRestBits);
+    }
 
     /**
      * Gets current bit position.

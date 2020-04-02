@@ -2,6 +2,7 @@
 #define ZSERIO_BIT_STREAM_READER_H_INC
 
 #include <cstddef>
+#include <cstring>
 #include <string>
 
 #include "zserio/Types.h"
@@ -92,7 +93,10 @@ public:
      *
      * \param buffer Bit buffer to read from.
      */
-    explicit BitStreamReader(const BitBuffer& bitBuffer);
+    template <typename ALLOC>
+    explicit BitStreamReader(const detail::BitBuffer<ALLOC>& bitBuffer) :
+            m_context(bitBuffer.getBuffer(), bitBuffer.getBitSize())
+    {}
 
     /**
      * Constructor from the file name.
@@ -241,7 +245,38 @@ public:
      *
      * \return Read bit buffer.
      */
-    BitBuffer readBitBuffer();
+    template <typename ALLOC>
+    detail::BitBuffer<RebindAlloc<ALLOC, uint8_t>> readBitBuffer(const ALLOC& allocator)
+    {
+        const size_t bitSize = convertVarUInt64ToArraySize(readVarUInt64());
+        size_t numBytesToRead = bitSize / 8;
+        const uint8_t numRestBits = static_cast<uint8_t>(bitSize - numBytesToRead * 8);
+        detail::BitBuffer<RebindAlloc<ALLOC, uint8_t>> bitBuffer(bitSize, allocator);
+        uint8_t* buffer = bitBuffer.getBuffer();
+        const BitPosType beginBitPosition = getBitPosition();
+        if ((beginBitPosition & 0x07) != 0)
+        {
+            // we are not aligned to byte
+            while (numBytesToRead > 0)
+            {
+                *buffer = static_cast<uint8_t>(readBits(8));
+                buffer++;
+                numBytesToRead--;
+            }
+        }
+        else
+        {
+            // we are aligned to byte
+            setBitPosition(beginBitPosition + numBytesToRead * 8);
+            memcpy(buffer, m_context.buffer + beginBitPosition / 8, numBytesToRead);
+            buffer += numBytesToRead;
+        }
+
+        if (numRestBits > 0)
+            *buffer = static_cast<uint8_t>(readBits(numRestBits));
+
+        return bitBuffer;
+    }
 
     /**
      * Gets current bit position.

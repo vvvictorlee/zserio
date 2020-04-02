@@ -8,6 +8,7 @@
 #include <zserio/BitPositionUtil.h>
 #include <zserio/BitSizeOfCalculator.h>
 #include <zserio/BitFieldUtil.h>
+#include <zserio/BitBuffer.hpp>
 
 #include <pmr_poc/SampleStruct.h>
 
@@ -16,20 +17,26 @@ namespace pmr_poc
 
 SampleStruct::SampleStruct(::zserio::BitStreamReader& in,
         const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
-        m_uint8Field_(readUint8Field(in)),
+        m_uint16Field_(readUint16Field(in)),
         m_stringField_(readStringField(in, allocator)),
+        m_externField_(readExternField(in, allocator)),
         m_childField_(readChildField(in, allocator))
 {
 }
 
-uint8_t SampleStruct::getUint8Field() const
+uint16_t SampleStruct::getUint16Field() const
 {
-    return m_uint8Field_;
+    return m_uint16Field_;
 }
 
 const ::zserio::pmr::string& SampleStruct::getStringField() const
 {
     return m_stringField_;
+}
+
+const ::zserio::pmr::BitBuffer& SampleStruct::getExternField() const
+{
+    return m_externField_;
 }
 
 const ::pmr_poc::ChildStruct& SampleStruct::getChildField() const
@@ -41,8 +48,9 @@ size_t SampleStruct::bitSizeOf(size_t bitPosition) const
 {
     size_t endBitPosition = bitPosition;
 
-    endBitPosition += UINT8_C(8);
+    endBitPosition += UINT8_C(16);
     endBitPosition += ::zserio::bitSizeOfString(m_stringField_);
+    endBitPosition += ::zserio::bitSizeOfBitBuffer(m_externField_);
     endBitPosition += m_childField_.bitSizeOf(endBitPosition);
 
     return endBitPosition - bitPosition;
@@ -53,8 +61,9 @@ bool SampleStruct::operator==(const SampleStruct& other) const
     if (this != &other)
     {
         return
-                (m_uint8Field_ == other.m_uint8Field_) &&
+                (m_uint16Field_ == other.m_uint16Field_) &&
                 (m_stringField_ == other.m_stringField_) &&
+                (m_externField_ == other.m_externField_) &&
                 (m_childField_ == other.m_childField_);
     }
 
@@ -65,22 +74,29 @@ int SampleStruct::hashCode() const
 {
     int result = ::zserio::HASH_SEED;
 
-    result = ::zserio::calcHashCode(result, m_uint8Field_);
+    result = ::zserio::calcHashCode(result, m_uint16Field_);
     result = ::zserio::calcHashCode(result, m_stringField_);
+    result = ::zserio::calcHashCode(result, m_externField_);
     result = ::zserio::calcHashCode(result, m_childField_);
 
     return result;
 }
 
-uint8_t SampleStruct::readUint8Field(::zserio::BitStreamReader& in)
+uint16_t SampleStruct::readUint16Field(::zserio::BitStreamReader& in)
 {
-    return static_cast<uint8_t>(in.readBits(UINT8_C(8)));
+    return static_cast<uint16_t>(in.readBits(UINT8_C(16)));
 }
 
 ::zserio::pmr::string SampleStruct::readStringField(::zserio::BitStreamReader& in,
         const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
     return in.readString(allocator);
+}
+
+::zserio::pmr::BitBuffer SampleStruct::readExternField(::zserio::BitStreamReader& in,
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+{
+    return static_cast<::zserio::pmr::BitBuffer>(in.readBitBuffer(allocator));
 }
 
 ::pmr_poc::ChildStruct SampleStruct::readChildField(::zserio::BitStreamReader& in,

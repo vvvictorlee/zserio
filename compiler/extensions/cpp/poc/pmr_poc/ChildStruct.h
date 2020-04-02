@@ -9,6 +9,8 @@
 #include <zserio/BitStreamWriter.h>
 #include <zserio/PreWriteAction.h>
 #include <zserio/pmr/Vector.h>
+#include <zserio/pmr/String.h>
+#include <zserio/pmr/BitBuffer.h>
 #include <zserio/Arrays.h>
 #include <zserio/Types.h>
 
@@ -30,25 +32,28 @@ public:
     ChildStruct(ChildStruct&&) = default;
     ChildStruct& operator=(ChildStruct&&) = default;
 
-    uint64_t getUint64Field() const;
-
     const ::zserio::pmr::vector<uint16_t>& getUint16Array() const;
+
+    const ::zserio::pmr::vector<::zserio::pmr::string>& getStringArray() const;
+
+    const ::zserio::pmr::vector<::zserio::pmr::BitBuffer>& getExternArray() const;
 
     size_t bitSizeOf(size_t bitPosition = 0) const;
 
     bool operator==(const ChildStruct& other) const;
     int hashCode() const;
 
-    void read(::zserio::BitStreamReader& in);
-
 private:
-    uint64_t readUint64Field(::zserio::BitStreamReader& in);
-
     ::zserio::pmr::vector<uint16_t> readUint16Array(::zserio::BitStreamReader& in,
             const ::zserio::pmr::PolymorphicAllocator<void>& alloc);
+    ::zserio::pmr::vector<::zserio::pmr::string> readStringArray(::zserio::BitStreamReader& in,
+            const ::zserio::pmr::PolymorphicAllocator<void>& alloc);
+    ::zserio::pmr::vector<::zserio::pmr::BitBuffer> readExternArray(::zserio::BitStreamReader& in,
+            const ::zserio::pmr::PolymorphicAllocator<void>& alloc);
 
-    uint64_t m_uint64Field_;
     ::zserio::pmr::vector<uint16_t> m_uint16Array_;
+    ::zserio::pmr::vector<::zserio::pmr::string> m_stringArray_;
+    ::zserio::pmr::vector<::zserio::pmr::BitBuffer> m_externArray_;
 };
 
 } // namespace pmr_poc

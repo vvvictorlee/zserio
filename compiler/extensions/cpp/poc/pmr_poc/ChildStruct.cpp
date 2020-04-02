@@ -8,6 +8,7 @@
 #include <zserio/BitPositionUtil.h>
 #include <zserio/BitSizeOfCalculator.h>
 #include <zserio/BitFieldUtil.h>
+#include <zserio/BitBuffer.hpp>
 
 #include <pmr_poc/ChildStruct.h>
 
@@ -16,14 +17,10 @@ namespace pmr_poc
 
 ChildStruct::ChildStruct(::zserio::BitStreamReader& in,
         const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
-        m_uint64Field_(readUint64Field(in)),
-        m_uint16Array_(readUint16Array(in, allocator))
+        m_uint16Array_(readUint16Array(in, allocator)),
+        m_stringArray_(readStringArray(in, allocator)),
+        m_externArray_(readExternArray(in, allocator))
 {
-}
-
-uint64_t ChildStruct::getUint64Field() const
-{
-    return m_uint64Field_;
 }
 
 const ::zserio::pmr::vector<uint16_t>& ChildStruct::getUint16Array() const
@@ -31,13 +28,28 @@ const ::zserio::pmr::vector<uint16_t>& ChildStruct::getUint16Array() const
     return m_uint16Array_;
 }
 
+const ::zserio::pmr::vector<::zserio::pmr::string>& ChildStruct::getStringArray() const
+{
+    return m_stringArray_;
+}
+
+const ::zserio::pmr::vector<::zserio::pmr::BitBuffer>& ChildStruct::getExternArray() const
+{
+    return m_externArray_;
+}
+
 size_t ChildStruct::bitSizeOf(size_t bitPosition) const
 {
     size_t endBitPosition = bitPosition;
 
-    endBitPosition += UINT8_C(64);
     endBitPosition += ::zserio::bitSizeOfAuto(
             ::zserio::StdIntArrayTraits<uint16_t>(), m_uint16Array_, endBitPosition);
+    endBitPosition += ::zserio::bitSizeOfAuto(
+            ::zserio::StringArrayTraits<::zserio::pmr::PolymorphicAllocator>(),
+            m_stringArray_, endBitPosition);
+    endBitPosition += ::zserio::bitSizeOfAuto(
+            ::zserio::BitBufferArrayTraits<::zserio::pmr::PolymorphicAllocator>(),
+            m_externArray_, endBitPosition);
 
     return endBitPosition - bitPosition;
 }
@@ -47,8 +59,9 @@ bool ChildStruct::operator==(const ChildStruct& other) const
     if (this != &other)
     {
         return
-                (m_uint64Field_ == other.m_uint64Field_) &&
-                (m_uint16Array_ == other.m_uint16Array_);
+                (m_uint16Array_ == other.m_uint16Array_) &&
+                (m_stringArray_ == other.m_stringArray_) &&
+                (m_externArray_ == other.m_externArray_);
     }
 
     return true;
@@ -58,15 +71,11 @@ int ChildStruct::hashCode() const
 {
     int result = ::zserio::HASH_SEED;
 
-    result = ::zserio::calcHashCode(result, m_uint64Field_);
     result = ::zserio::calcHashCode(result, m_uint16Array_);
+    result = ::zserio::calcHashCode(result, m_stringArray_);
+    result = ::zserio::calcHashCode(result, m_externArray_);
 
     return result;
-}
-
-uint64_t ChildStruct::readUint64Field(::zserio::BitStreamReader& in)
-{
-    return static_cast<uint64_t>(in.readBits64(UINT8_C(64)));
 }
 
 ::zserio::pmr::vector<uint16_t> ChildStruct::readUint16Array(::zserio::BitStreamReader& in,
@@ -74,6 +83,22 @@ uint64_t ChildStruct::readUint64Field(::zserio::BitStreamReader& in)
 {
     ::zserio::pmr::vector<uint16_t> readField{allocator};
     ::zserio::readAuto(::zserio::StdIntArrayTraits<uint16_t>(), readField, in);
+    return readField;
+}
+
+::zserio::pmr::vector<::zserio::pmr::string> ChildStruct::readStringArray(::zserio::BitStreamReader& in,
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+{
+    ::zserio::pmr::vector<::zserio::pmr::string> readField{allocator};
+    ::zserio::readAuto(::zserio::StringArrayTraits<::zserio::pmr::PolymorphicAllocator>(), readField, in);
+    return readField;
+}
+
+::zserio::pmr::vector<::zserio::pmr::BitBuffer> ChildStruct::readExternArray(::zserio::BitStreamReader& in,
+        const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+{
+    ::zserio::pmr::vector<::zserio::pmr::BitBuffer> readField{allocator};
+    ::zserio::readAuto(::zserio::BitBufferArrayTraits<::zserio::pmr::PolymorphicAllocator>(), readField, in);
     return readField;
 }
 

@@ -1411,7 +1411,7 @@ struct BoolArrayTraits
 /**
  * Array traits for Zserio string type.
  */
-template <template <typename> typename ALLOC>
+template <template <typename> typename ALLOC = std::allocator>
 class StringArrayTraits
 {
 public:
@@ -1449,10 +1449,9 @@ public:
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    void read(std::vector<type, ALLOC<type>>& array, BitStreamReader& in, size_t)
+    static void read(std::vector<type, ALLOC<type>>& array, BitStreamReader& in, size_t)
     {
-        array.push_back(in.readString<ALLOC<char>>(
-                array.get_allocator().resource()));
+        array.push_back(in.readString<ALLOC<char>>(array.get_allocator()));
     }
 
     /**
@@ -1473,10 +1472,11 @@ public:
 /**
  * Array traits for Zserio extern bit buffer type.
  */
+template <template <typename> typename ALLOC = std::allocator>
 struct BitBufferArrayTraits
 {
     /** Type of the single array element. */
-    typedef zserio::BitBuffer type;
+    typedef zserio::detail::BitBuffer<ALLOC<uint8_t>> type;
 
     /**
      * Calculates bit size of the array element.
@@ -1509,10 +1509,9 @@ struct BitBufferArrayTraits
      * \param array Array to read the element to.
      * \param in Bit stream reader.
      */
-    template <typename ALLOC>
-    static void read(std::vector<type, ALLOC>& array, BitStreamReader& in, size_t)
+    static void read(std::vector<type, ALLOC<type>>& array, BitStreamReader& in, size_t)
     {
-        array.push_back(in.readBitBuffer());
+        array.push_back(in.readBitBuffer(ALLOC<uint8_t>(array.get_allocator())));
     }
 
     /**

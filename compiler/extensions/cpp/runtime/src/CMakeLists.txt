@@ -21,7 +21,7 @@ project(ZserioCppRuntime)
 set(ZSERIO_CPP_RUNTIME_LIB_SRCS
     zserio/AnyHolder.h
     zserio/Arrays.h
-    zserio/BitBuffer.cpp
+    zserio/BitBuffer.hpp
     zserio/BitBuffer.h
     zserio/BitFieldUtil.cpp
     zserio/BitFieldUtil.h
