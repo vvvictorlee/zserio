@@ -9,8 +9,10 @@
 #include <zserio/BitStreamWriter.h>
 #include <zserio/PreWriteAction.h>
 #include <zserio/pmr/String.h>
+#include <zserio/pmr/Vector.h>
 #include <zserio/pmr/BitBuffer.h>
 #include <zserio/Types.h>
+#include <zserio/Arrays.h>
 
 #include <pmr_poc/ChildStruct.h>
 
@@ -38,7 +40,7 @@ public:
 
     const ::zserio::pmr::BitBuffer& getExternField() const;
 
-    const ::pmr_poc::ChildStruct& getChildField() const;
+    const ::zserio::pmr::vector<::pmr_poc::ChildStruct>& getChildField() const;
 
     size_t bitSizeOf(size_t bitPosition = 0) const;
 
@@ -46,18 +48,20 @@ public:
     int hashCode() const;
 
 private:
+    class ElementFactory_childField;
+
     uint16_t readUint16Field(::zserio::BitStreamReader& in);
     ::zserio::pmr::string readStringField(::zserio::BitStreamReader& in,
             const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
     ::zserio::pmr::BitBuffer readExternField(::zserio::BitStreamReader& in,
             const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
-    ::pmr_poc::ChildStruct readChildField(::zserio::BitStreamReader& in,
+    ::zserio::pmr::vector<::pmr_poc::ChildStruct> readChildField(::zserio::BitStreamReader& in,
             const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
 
     uint16_t m_uint16Field_;
     ::zserio::pmr::string m_stringField_;
     ::zserio::pmr::BitBuffer m_externField_;
-    ::pmr_poc::ChildStruct m_childField_;
+    ::zserio::pmr::vector<::pmr_poc::ChildStruct> m_childField_;
 };
 
 } // namespace pmr_poc

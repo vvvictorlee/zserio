@@ -5,6 +5,7 @@ struct ChildStruct
     uint16 uint16Array[];
     string stringArray[];
     extern externArray[];
+    // optional array
 };
 
 struct SampleStruct
@@ -12,5 +13,7 @@ struct SampleStruct
     uint16 uint16Field;
     string stringField;
     extern externField;
-    ChildStruct childField;
+    // optional which allocates dynamically
+    // choice which allocates dynamically
+    ChildStruct childField[];
 };

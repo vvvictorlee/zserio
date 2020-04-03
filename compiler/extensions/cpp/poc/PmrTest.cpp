@@ -70,6 +70,16 @@ private:
     uint8_t* m_nextPtr = m_buffer;
 };
 
+void printExternArray(const pmr_poc::SampleStruct& sampleStruct)
+{
+    // check that the extern array is valid (last data in the bit stream) -> should print "aa bb cc"
+    const pmr_poc::ChildStruct& childField = sampleStruct.getChildField()[0];
+    printf("%02x %02x %02x\n",
+            childField.getExternArray().at(0).getBuffer()[0],
+            childField.getExternArray().at(1).getBuffer()[0],
+            childField.getExternArray().at(2).getBuffer()[0]);
+}
+
 //#define ENABLE_WRITER
 #ifdef ENABLE_WRITER
 void writeSampleStructure(zserio::BitStreamWriter& writer)
@@ -85,8 +95,11 @@ void writeSampleStructure(zserio::BitStreamWriter& writer)
     const zserio::BitBuffer bitBuffer(bitBufferData, 5);
     writer.writeBitBuffer(bitBuffer);
 
-    // childField
+    // childField[]
     {
+        // length
+        writer.writeVarUInt64(1);
+
         // uint16Array
         std::vector<uint16_t> uint16Array{ 0x01, 0x02, 0x03, 0x04 };
         ::zserio::writeAuto(::zserio::StdIntArrayTraits<uint16_t>(), uint16Array, writer);
@@ -105,16 +118,6 @@ void writeSampleStructure(zserio::BitStreamWriter& writer)
     }
 }
 #endif
-
-void printExternArray(const pmr_poc::SampleStruct& sampleStruct)
-{
-    // check that the extern array is valid (last data in the bit stream) -> should print "aa bb cc"
-    const pmr_poc::ChildStruct& childField = sampleStruct.getChildField();
-    printf("%02x %02x %02x\n",
-            childField.getExternArray().at(0).getBuffer()[0],
-            childField.getExternArray().at(1).getBuffer()[0],
-            childField.getExternArray().at(2).getBuffer()[0]);
-}
 
 int main(int argc, char* argv[])
 {
@@ -135,9 +138,9 @@ int main(int argc, char* argv[])
         0xab, 0xcd, 0x30, 0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x74,
         0x65, 0x73, 0x74, 0x20, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x20, 0x6c, 0x6f, 0x6e, 0x67, 0x20,
         0x65, 0x6e, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x74, 0x6f, 0x20, 0x61, 0x6c, 0x6c, 0x6f, 0x63, 0x61,
-        0x74, 0x65, 0x21, 0x05, 0xf8, 0x20, 0x00, 0x08, 0x00, 0x10, 0x00, 0x18, 0x00, 0x20, 0x20, 0x23,
-        0x0b, 0x0b, 0x0b, 0x08, 0x13, 0x13, 0x10, 0x1b, 0x1b, 0x1b, 0x18, 0x1b, 0x23, 0x23, 0x20, 0x18,
-        0x45, 0x50, 0x45, 0xd8, 0x46, 0x60
+        0x74, 0x65, 0x21, 0x05, 0xf8, 0x08, 0x20, 0x00, 0x08, 0x00, 0x10, 0x00, 0x18, 0x00, 0x20, 0x20,
+        0x23, 0x0b, 0x0b, 0x0b, 0x08, 0x13, 0x13, 0x10, 0x1b, 0x1b, 0x1b, 0x18, 0x1b, 0x23, 0x23, 0x20,
+        0x18, 0x45, 0x50, 0x45, 0xd8, 0x46, 0x60
     };
     const size_t bufferSize = sizeof(buffer);
 #endif

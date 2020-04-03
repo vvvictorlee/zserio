@@ -15,6 +15,21 @@
 namespace pmr_poc
 {
 
+class SampleStruct::ElementFactory_childField
+{
+public:
+    explicit ElementFactory_childField(SampleStruct& owner) : m_owner(owner) {}
+
+    void create(::zserio::pmr::vector<::pmr_poc::ChildStruct>& array, ::zserio::BitStreamReader& in, size_t index) const
+    {
+        (void)index;
+        array.emplace_back(in, array.get_allocator());
+    }
+
+private:
+    SampleStruct& m_owner;
+};
+
 SampleStruct::SampleStruct(::zserio::BitStreamReader& in,
         const ::zserio::pmr::PolymorphicAllocator<void>& allocator) :
         m_uint16Field_(readUint16Field(in)),
@@ -39,7 +54,7 @@ const ::zserio::pmr::BitBuffer& SampleStruct::getExternField() const
     return m_externField_;
 }
 
-const ::pmr_poc::ChildStruct& SampleStruct::getChildField() const
+const ::zserio::pmr::vector<::pmr_poc::ChildStruct>& SampleStruct::getChildField() const
 {
     return m_childField_;
 }
@@ -51,7 +66,8 @@ size_t SampleStruct::bitSizeOf(size_t bitPosition) const
     endBitPosition += UINT8_C(16);
     endBitPosition += ::zserio::bitSizeOfString(m_stringField_);
     endBitPosition += ::zserio::bitSizeOfBitBuffer(m_externField_);
-    endBitPosition += m_childField_.bitSizeOf(endBitPosition);
+    endBitPosition += ::zserio::bitSizeOfAuto(
+            ::zserio::ObjectArrayTraits<::pmr_poc::ChildStruct>(), m_childField_, endBitPosition);
 
     return endBitPosition - bitPosition;
 }
@@ -99,10 +115,15 @@ uint16_t SampleStruct::readUint16Field(::zserio::BitStreamReader& in)
     return static_cast<::zserio::pmr::BitBuffer>(in.readBitBuffer(allocator));
 }
 
-::pmr_poc::ChildStruct SampleStruct::readChildField(::zserio::BitStreamReader& in,
+::zserio::pmr::vector<::pmr_poc::ChildStruct> SampleStruct::readChildField(::zserio::BitStreamReader& in,
         const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
-    return ::pmr_poc::ChildStruct(in, allocator);
+    ::zserio::pmr::vector<::pmr_poc::ChildStruct> readField{allocator};
+    ::zserio::readAuto(
+            ::zserio::ObjectArrayTraits<::pmr_poc::ChildStruct, ElementFactory_childField>(
+                    ElementFactory_childField(*this)),
+            readField, in);
+    return readField;
 }
 
 } // namespace pmr_poc
