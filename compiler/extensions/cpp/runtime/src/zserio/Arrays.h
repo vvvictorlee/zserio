@@ -1411,7 +1411,7 @@ struct BoolArrayTraits
 /**
  * Array traits for Zserio string type.
  */
-template <template <typename> typename ALLOC = std::allocator>
+template <template <typename> class ALLOC = std::allocator>
 class StringArrayTraits
 {
 public:
@@ -1472,7 +1472,7 @@ public:
 /**
  * Array traits for Zserio extern bit buffer type.
  */
-template <template <typename> typename ALLOC = std::allocator>
+template <template <typename> class ALLOC = std::allocator>
 struct BitBufferArrayTraits
 {
     /** Type of the single array element. */

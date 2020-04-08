@@ -9,7 +9,7 @@ namespace pmr
 
 MemoryResource& getDefaultResource() noexcept
 {
-    getNewDeleteResource();
+    return getNewDeleteResource();
 }
 
 } // namespace pmr

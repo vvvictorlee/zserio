@@ -14,7 +14,7 @@ namespace pmr
 class MemoryResource
 {
 public:
-virtual ~MemoryResource() = default;
+    virtual ~MemoryResource() = default;
 
     void* allocate(size_t bytes, size_t alignment = alignof(std::max_align_t))
     {

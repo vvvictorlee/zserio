@@ -14,12 +14,12 @@ namespace detail
 class NewDeleteResource : public MemoryResource
 {
 private:
-    virtual void* doAllocate(size_t bytes, size_t align) override
+    virtual void* doAllocate(size_t bytes, size_t ) override
     {
-        return ::operator new (bytes);
+        return ::operator new(bytes);
     }
 
-    virtual void doDeallocate(void* p, size_t bytes, size_t align) override
+    virtual void doDeallocate(void* p, size_t, size_t) override
     {
         ::operator delete(p);
     }

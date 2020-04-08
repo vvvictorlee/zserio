@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "zserio/Types.h"
 #include "zserio/FloatUtil.h"
@@ -255,6 +256,15 @@ namespace zserio
             return calcHashCode(seedValue, 0);
 
         return calcHashCode(seedValue, *optionalHolder);
+    }
+
+    template <typename FIELD, typename DELETER>
+    inline int calcHashCode(int seedValue, const std::unique_ptr<FIELD, DELETER>& optionalField)
+    {
+        if (!optionalField)
+            return calcHashCode(seedValue, 0);
+
+        return calcHashCode(seedValue, *optionalField);
     }
 } // namespace zserio
 

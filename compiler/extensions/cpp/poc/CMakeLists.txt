@@ -8,10 +8,14 @@ option(ZSERIO_MEMORY_RESOURCE_TRACING ON "Whether to trace Zserio Memory Resourc
 option(TRACE_ALLOCATIONS ON "Whether to use allocation tracing library.")
 
 set(PMR_POC_GEN
+    pmr_poc/BigStruct.cpp
+    pmr_poc/BigStruct.h
     pmr_poc/ChildStruct.cpp
     pmr_poc/ChildStruct.h
     pmr_poc/SampleStruct.cpp
     pmr_poc/SampleStruct.h
+    pmr_poc/StringStruct.cpp
+    pmr_poc/StringStruct.h
 )
 
 add_executable(${PROJECT_NAME}

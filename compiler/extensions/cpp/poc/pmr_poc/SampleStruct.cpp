@@ -35,6 +35,8 @@ SampleStruct::SampleStruct(::zserio::BitStreamReader& in,
         m_uint16Field_(readUint16Field(in)),
         m_stringField_(readStringField(in, allocator)),
         m_externField_(readExternField(in, allocator)),
+        m_inplaceOptionalField_(readInplaceOptionalField(in)),
+        m_heapOptionalField_(readHeapOptionalField(in, allocator)),
         m_childField_(readChildField(in, allocator))
 {
 }
@@ -54,6 +56,26 @@ const ::zserio::pmr::BitBuffer& SampleStruct::getExternField() const
     return m_externField_;
 }
 
+const ::pmr_poc::BigStruct& SampleStruct::getInplaceOptionalField() const
+{
+    return m_inplaceOptionalField_.value();
+}
+
+bool SampleStruct::hasInplaceOptionalField() const
+{
+    return (m_inplaceOptionalField_.hasValue());
+}
+
+const ::pmr_poc::StringStruct& SampleStruct::getHeapOptionalField() const
+{
+    return *m_heapOptionalField_;
+}
+
+bool SampleStruct::hasHeapOptionalField() const
+{
+    return static_cast<bool>(m_heapOptionalField_);
+}
+
 const ::zserio::pmr::vector<::pmr_poc::ChildStruct>& SampleStruct::getChildField() const
 {
     return m_childField_;
@@ -66,6 +88,16 @@ size_t SampleStruct::bitSizeOf(size_t bitPosition) const
     endBitPosition += UINT8_C(16);
     endBitPosition += ::zserio::bitSizeOfString(m_stringField_);
     endBitPosition += ::zserio::bitSizeOfBitBuffer(m_externField_);
+    endBitPosition += 1;
+    if (m_inplaceOptionalField_.hasValue())
+    {
+        endBitPosition += m_inplaceOptionalField_.value().bitSizeOf(endBitPosition);
+    }
+    endBitPosition += 1;
+    if (m_heapOptionalField_)
+    {
+        endBitPosition += m_heapOptionalField_->bitSizeOf(endBitPosition);
+    }
     endBitPosition += ::zserio::bitSizeOfAuto(
             ::zserio::ObjectArrayTraits<::pmr_poc::ChildStruct>(), m_childField_, endBitPosition);
 
@@ -80,6 +112,8 @@ bool SampleStruct::operator==(const SampleStruct& other) const
                 (m_uint16Field_ == other.m_uint16Field_) &&
                 (m_stringField_ == other.m_stringField_) &&
                 (m_externField_ == other.m_externField_) &&
+                (m_inplaceOptionalField_ == other.m_inplaceOptionalField_) &&
+                (m_heapOptionalField_ == other.m_heapOptionalField_) && // TODO[Mi-L@]: Check!
                 (m_childField_ == other.m_childField_);
     }
 
@@ -93,6 +127,8 @@ int SampleStruct::hashCode() const
     result = ::zserio::calcHashCode(result, m_uint16Field_);
     result = ::zserio::calcHashCode(result, m_stringField_);
     result = ::zserio::calcHashCode(result, m_externField_);
+    result = ::zserio::calcHashCode(result, m_inplaceOptionalField_);
+    result = ::zserio::calcHashCode(result, m_heapOptionalField_);
     result = ::zserio::calcHashCode(result, m_childField_);
 
     return result;
@@ -113,6 +149,26 @@ uint16_t SampleStruct::readUint16Field(::zserio::BitStreamReader& in)
         const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
     return static_cast<::zserio::pmr::BitBuffer>(in.readBitBuffer(allocator));
+}
+
+::zserio::OptionalHolder<::pmr_poc::BigStruct> SampleStruct::readInplaceOptionalField(
+        ::zserio::BitStreamReader& in)
+{
+    if (in.readBool())
+        return ::pmr_poc::BigStruct(in);
+
+    return ::zserio::NullOpt;
+}
+
+::zserio::pmr::unique_ptr<::pmr_poc::StringStruct> SampleStruct::readHeapOptionalField(
+        ::zserio::BitStreamReader& in, const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
+{
+    if (in.readBool())
+    {
+        return zserio::pmr::allocate_unique<::pmr_poc::StringStruct>(allocator, in, allocator);
+    }
+
+    return ::zserio::pmr::unique_ptr<::pmr_poc::StringStruct>(nullptr, allocator);
 }
 
 ::zserio::pmr::vector<::pmr_poc::ChildStruct> SampleStruct::readChildField(::zserio::BitStreamReader& in,

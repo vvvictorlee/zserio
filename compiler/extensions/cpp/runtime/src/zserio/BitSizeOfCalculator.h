@@ -6,6 +6,7 @@
 
 #include "zserio/Types.h"
 #include "zserio/BitBuffer.h"
+#include "zserio/BitPositionUtil.h"
 
 namespace zserio
 {

@@ -11,10 +11,14 @@
 #include <zserio/pmr/String.h>
 #include <zserio/pmr/Vector.h>
 #include <zserio/pmr/BitBuffer.h>
+#include <zserio/pmr/UniquePtr.h>
+#include <zserio/OptionalHolder.h>
 #include <zserio/Types.h>
 #include <zserio/Arrays.h>
 
+#include <pmr_poc/BigStruct.h>
 #include <pmr_poc/ChildStruct.h>
+#include <pmr_poc/StringStruct.h>
 
 namespace pmr_poc
 {
@@ -40,6 +44,12 @@ public:
 
     const ::zserio::pmr::BitBuffer& getExternField() const;
 
+    const ::pmr_poc::BigStruct& getInplaceOptionalField() const;
+    bool hasInplaceOptionalField() const;
+
+    const ::pmr_poc::StringStruct& getHeapOptionalField() const;
+    bool hasHeapOptionalField() const;
+
     const ::zserio::pmr::vector<::pmr_poc::ChildStruct>& getChildField() const;
 
     size_t bitSizeOf(size_t bitPosition = 0) const;
@@ -55,12 +65,17 @@ private:
             const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
     ::zserio::pmr::BitBuffer readExternField(::zserio::BitStreamReader& in,
             const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
+    ::zserio::OptionalHolder<::pmr_poc::BigStruct> readInplaceOptionalField(::zserio::BitStreamReader& in);
+    ::zserio::pmr::unique_ptr<::pmr_poc::StringStruct> readHeapOptionalField(::zserio::BitStreamReader& in,
+            const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
     ::zserio::pmr::vector<::pmr_poc::ChildStruct> readChildField(::zserio::BitStreamReader& in,
             const ::zserio::pmr::PolymorphicAllocator<void>& allocator);
 
     uint16_t m_uint16Field_;
     ::zserio::pmr::string m_stringField_;
     ::zserio::pmr::BitBuffer m_externField_;
+    ::zserio::OptionalHolder<::pmr_poc::BigStruct> m_inplaceOptionalField_;
+    ::zserio::pmr::unique_ptr<::pmr_poc::StringStruct> m_heapOptionalField_;
     ::zserio::pmr::vector<::pmr_poc::ChildStruct> m_childField_;
 };
 
