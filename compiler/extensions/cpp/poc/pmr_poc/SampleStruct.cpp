@@ -113,7 +113,7 @@ bool SampleStruct::operator==(const SampleStruct& other) const
                 (m_stringField_ == other.m_stringField_) &&
                 (m_externField_ == other.m_externField_) &&
                 (m_inplaceOptionalField_ == other.m_inplaceOptionalField_) &&
-                (m_heapOptionalField_ == other.m_heapOptionalField_) && // TODO[Mi-L@]: Check!
+                (m_heapOptionalField_ == other.m_heapOptionalField_) &&
                 (m_childField_ == other.m_childField_);
     }
 
@@ -164,9 +164,7 @@ uint16_t SampleStruct::readUint16Field(::zserio::BitStreamReader& in)
         ::zserio::BitStreamReader& in, const ::zserio::pmr::PolymorphicAllocator<void>& allocator)
 {
     if (in.readBool())
-    {
         return zserio::pmr::allocate_unique<::pmr_poc::StringStruct>(allocator, in, allocator);
-    }
 
     return ::zserio::pmr::unique_ptr<::pmr_poc::StringStruct>(nullptr, allocator);
 }
