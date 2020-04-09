@@ -10,7 +10,7 @@ namespace pmr
 {
 
 template <typename T>
-using unique_ptr = std::unique_ptr<T, detail::UniquePtrDeleter<T, PolymorphicAllocator<T>>>;
+using unique_ptr = std::unique_ptr<T, detail::UniquePtrDeleter<PolymorphicAllocator<T>>>;
 
 template <typename T, typename U, class ...Args>
 unique_ptr<T> allocate_unique(const PolymorphicAllocator<U>& allocator, Args&& ...args)
